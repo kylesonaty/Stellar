@@ -1,10 +1,13 @@
-﻿namespace Stellar.Documents
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace Stellar.Documents
 {
     public interface IDocuments
     {
-        object Store(object entity);
-        object Delete(string id);
-        T Get<T>(string id);
-        ICosmosQueryable<T> Query<T>();
+        Task<object> Store(string id, object entity);
+        Task<object> Delete(string id);
+        Task<T> Get<T>(string id);
+        Task<List<T>> Query<T>(string sql, object param = null);
     }
 }
