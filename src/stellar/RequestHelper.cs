@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace Stellar
     {
         private static HttpClient client = new HttpClient();
 
-        internal async static Task<string> ExecuteResourceRequest(string verb, string url, string key, string queryPath, string resourceType, string resourceValue, string body = "", bool isQuery = false, bool upsert = false)
+        internal async static Task<HttpResponseMessage> ExecuteResourceRequest(string verb, string url, string key, string queryPath, string resourceType, string resourceValue, string body = "", bool isQuery = false, bool upsert = false)
         {
             string response = null;
 
@@ -27,7 +28,7 @@ namespace Stellar
                     requestMessage.Headers.Add("Accept", "application/json");
 
                     if (upsert)
-                        requestMessage.Headers.Add("x-ms-documentdb-is-upsert", "true");
+                        requestMessage.Headers.Add("x-ms-documentdb-is-upsert", "True");
 
                     if (isQuery)
                         requestMessage.Headers.Add("x-ms-documentdb-isquery", "true");
@@ -65,8 +66,7 @@ namespace Stellar
                             throw new ArgumentException("Unknown VERB: " + verb + ", recognized verbs are: get, post, delete and put");
                     }
                     HttpResponseMessage responseMessage = await client.SendAsync(requestMessage);
-                    HttpContent httpContent = responseMessage.Content;
-                    response = await httpContent.ReadAsStringAsync();
+                    return responseMessage;
                 }
             }
             catch (Exception ex)
@@ -74,7 +74,7 @@ namespace Stellar
                 Trace.TraceError(ex.ToString());
                 throw;
             }
-            return response;
+            
         }
 
     

@@ -33,10 +33,13 @@ namespace Stellar
             return response;
         }
 
-        public async Task<T> Get<T>(string id)
+        public async Task<T> Get<T>(string id) where T : class
         {
             var queryPath = $"dbs/{_dbName}/colls/{_collectionName}/docs/{id}";
             var json = await GetResourceResult("get", queryPath, queryPath);
+            if (json == "404")
+                return null;
+
             var obj = _serializer.Deserailize<T>(json);
             return obj;
         }
@@ -72,8 +75,12 @@ namespace Stellar
         {
             try
             {
-                var result = await HttpRequestHelper.ExecuteResourceRequest(verb, _uri, _apiKey, queryPath, "docs", resourceValue, body, jsonQuery, upsert);
-                return result;
+                var responseMessage = await HttpRequestHelper.ExecuteResourceRequest(verb, _uri, _apiKey, queryPath, "docs", resourceValue, body, jsonQuery, upsert);
+                if (responseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    return "404";
+                var httpContent = responseMessage.Content;
+                var response = await httpContent.ReadAsStringAsync();
+                return response;
             }
             catch (Exception ex)
             {
