@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
-using Stellar.Documents;
+﻿using Stellar.Documents;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -26,7 +26,7 @@ namespace Stellar
             _serializer = serializer;
         }
 
-        public async Task<object> Delete(string id)
+        public async Task<CosmosHttpResponse> Delete(string id)
         {
             var queryPath = $"dbs/{_dbName}/colls/{_collectionName}/docs/{id}";
             var response = await GetResourceResult("delete", queryPath, queryPath);
@@ -36,12 +36,11 @@ namespace Stellar
         public async Task<T> Get<T>(string id) where T : class
         {
             var queryPath = $"dbs/{_dbName}/colls/{_collectionName}/docs/{id}";
-            var json = await GetResourceResult("get", queryPath, queryPath);
-            if (json == "404")
+            var response = await GetResourceResult("get", queryPath, queryPath);
+            if (response.StatusCode == HttpStatusCode.NotFound)
                 return null;
 
-            var obj = _serializer.Deserailize<T>(json);
-            return obj;
+            return _serializer.Deserailize<T>(response.Body);
         }
         
         public async Task<List<T>> Query<T>(string sql, object param = null)
@@ -55,14 +54,18 @@ namespace Stellar
             sql = sql + " and " + result + "._type = \"" + typeof(T).FullName + "\"";
 
             var query = CreateCosmosQueryJson(sql, param);
-            var json = await GetResourceResult("post", queryPath, resourceValue, query, jsonQuery: true);
-            var response = _serializer.Deserailize<CosmosQueryResponse>(json);
-            if (response._count == 0)
+            var response = await GetResourceResult("post", queryPath, resourceValue, query, jsonQuery: true);
+            if (response.StatusCode != HttpStatusCode.OK)
+                throw new CosmosQueryException(response.Body);
+
+
+            var cosmosQueryResponse = _serializer.Deserailize<CosmosQueryResponse>(response.Body);
+            if (cosmosQueryResponse._count == 0)
                 return new List<T>();
-            return _serializer.Deserailize<List<T>>(response.Documents.ToString());
+            return _serializer.Deserailize<List<T>>(cosmosQueryResponse.Documents.ToString());
         }
 
-        public async Task<object> Store(string id, object entity)
+        public async Task<CosmosHttpResponse> Store(string id, object entity)
         {
             var queryPath = $"dbs/{_dbName}/colls/{_collectionName}/docs";
             var resourceValue = queryPath.Substring(0, queryPath.LastIndexOf('/'));
@@ -71,15 +74,16 @@ namespace Stellar
             return result;
         }
 
-        private async Task<string> GetResourceResult(string verb, string queryPath, string resourceValue = "", string body = "", string resourceType = "docs", bool jsonQuery = false, bool upsert = false)
+        private async Task<CosmosHttpResponse> GetResourceResult(string verb, string queryPath, string resourceValue = "", string body = "", string resourceType = "docs", bool jsonQuery = false, bool upsert = false)
         {
             try
             {
                 var responseMessage = await HttpRequestHelper.ExecuteResourceRequest(verb, _uri, _apiKey, queryPath, "docs", resourceValue, body, jsonQuery, upsert);
-                if (responseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
-                    return "404";
-                var httpContent = responseMessage.Content;
-                var response = await httpContent.ReadAsStringAsync();
+                var response = new CosmosHttpResponse
+                {
+                    StatusCode = responseMessage.StatusCode,
+                    Body = await responseMessage.Content.ReadAsStringAsync()
+                };
                 return response;
             }
             catch (Exception ex)
@@ -103,34 +107,5 @@ namespace Stellar
             
             return _serializer.Serialize(query); // might have to use different method, this one adds type parameter
         }
-    }
-
-    internal class CosmosQuery
-    {
-        public string Query { get; set; }
-        public IEnumerable<CosmosQueryParameter> Parameters { get; set; }
-    }
-
-    internal class CosmosQueryParameter
-    {
-        public string Name { get; set; }
-        public string Value { get; set; }
-    }
-
-    internal static class DictionaryHelper
-    {
-        internal static IEnumerable<CosmosQueryParameter> ToCosmosQueryParameterList(IDictionary<string, string> dictionary)
-        {
-            foreach (var item in dictionary)
-            {
-                yield return new CosmosQueryParameter { Name = item.Key, Value = item.Value };
-            }
-        }
-    }
-
-    internal class CosmosQueryResponse
-    {
-        public int _count { get; set; }
-        public JArray Documents { get; set; }
     }
 }

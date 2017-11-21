@@ -5,8 +5,8 @@ namespace Stellar.Documents
 {
     public interface IDocuments
     {
-        Task<object> Store(string id, object entity);
-        Task<object> Delete(string id);
+        Task<CosmosHttpResponse> Store(string id, object entity);
+        Task<CosmosHttpResponse> Delete(string id);
         Task<T> Get<T>(string id) where T : class;
         Task<List<T>> Query<T>(string sql, object param = null);
     }
