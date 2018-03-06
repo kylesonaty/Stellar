@@ -1,4 +1,5 @@
 ﻿using Stellar.Documents;
+using Stellar.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

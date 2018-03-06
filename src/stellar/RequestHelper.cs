@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,8 +12,6 @@ namespace Stellar
 
         internal async static Task<HttpResponseMessage> ExecuteResourceRequest(string verb, string url, string key, string queryPath, string resourceType, string resourceValue, string body = "", bool isQuery = false, bool upsert = false)
         {
-            string response = null;
-
             try
             {
                 var uri = new Uri(new Uri(url), queryPath);
@@ -32,24 +29,23 @@ namespace Stellar
 
                     if (isQuery)
                         requestMessage.Headers.Add("x-ms-documentdb-isquery", "true");
-
-
+                    
                     requestMessage.RequestUri = uri;
-                    switch (verb)
+                    switch (verb.ToLower())
                     {
                         case "delete":
-                            requestMessage.Method = new HttpMethod("DELETE");
+                            requestMessage.Method = HttpMethod.Delete;
                             break;
                         case "get":
-                            requestMessage.Method = new HttpMethod("GET");
+                            requestMessage.Method = HttpMethod.Get;
                             break;
                         case "put":
-                            requestMessage.Method = new HttpMethod("PUT");
+                            requestMessage.Method = HttpMethod.Put;
                             StringContent stringContent = new StringContent(body);
                             requestMessage.Content = stringContent;
                             break;
                         case "post":
-                            requestMessage.Method = new HttpMethod("POST");
+                            requestMessage.Method = HttpMethod.Post;
                             StringContent cont;
                             if (!isQuery)
                             {
@@ -73,11 +69,9 @@ namespace Stellar
             {
                 Trace.TraceError(ex.ToString());
                 throw;
-            }
-            
+            }    
         }
-
-    
+        
         internal static string CreateAuthorizationSignature(string utcDate, string verb, string resourceType, string resourceValue, string key, string keyType, string tokenVersion)
         {
             try

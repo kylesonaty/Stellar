@@ -1,4 +1,4 @@
-﻿namespace Stellar
+﻿namespace Stellar.Serialization
 {
     public interface ISerializer
     {

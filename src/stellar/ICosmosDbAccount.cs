@@ -1,4 +1,5 @@
 ﻿using Stellar.Documents;
+using Stellar.Serialization;
 
 namespace Stellar
 {

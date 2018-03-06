@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
-namespace Stellar
+namespace Stellar.Serialization
 {
     public class JsonNetSerializer : ISerializer
     {
