@@ -10,6 +10,25 @@ namespace Stellar
     {
         private static HttpClient client = new HttpClient();
 
+        internal async static Task<CosmosHttpResponse> GetResourceResult(string verb, string uri, string apiKey, string queryPath, string resourceValue = "", string body = "", string resourceType = "docs", bool isQuery = false, bool upsert = false)
+        {
+            try
+            {
+                var responseMessage = await ExecuteResourceRequest(verb, uri, apiKey, queryPath, "docs", resourceValue, body, isQuery, upsert);
+                var response = new CosmosHttpResponse
+                {
+                    StatusCode = responseMessage.StatusCode,
+                    Body = await responseMessage.Content.ReadAsStringAsync()
+                };
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError(ex.ToString());
+                throw;
+            }
+        }
+
         internal async static Task<HttpResponseMessage> ExecuteResourceRequest(string verb, string url, string key, string queryPath, string resourceType, string resourceValue, string body = "", bool isQuery = false, bool upsert = false)
         {
             try

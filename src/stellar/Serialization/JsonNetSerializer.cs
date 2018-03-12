@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using System;
 
 namespace Stellar.Serialization
 {
@@ -22,6 +23,11 @@ namespace Stellar.Serialization
             jo.Add("_type", entity.GetType().FullName);
             
             return JsonConvert.SerializeObject(jo, Formatting.None);
+        }
+
+        public object Deserialize(string json, Type type)
+        {
+            return JsonConvert.DeserializeObject(json, type);
         }
     }
 }
