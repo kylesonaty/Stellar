@@ -58,7 +58,7 @@ namespace Stellar
         /// <param name="sql"></param>
         /// <param name="param"></param>
         /// <returns></returns>
-        public async Task<List<T>> Query<T>(string sql, object param = null)
+        public async Task<IEnumerable<T>> Query<T>(string sql, object param = null)
         {
             var resourceValue = _basePath.Substring(0, _basePath.LastIndexOf('/'));
             var regex = new Regex(@"(?<=\bfrom\s)(\w+)");
@@ -71,7 +71,6 @@ namespace Stellar
             var response = await GetResourceResult("post", _basePath, resourceValue, query, jsonQuery: true);
             if (response.StatusCode != HttpStatusCode.OK)
                 throw new CosmosQueryException(response.Body);
-
 
             var cosmosQueryResponse = _serializer.Deserailize<CosmosQueryResponse>(response.Body);
             if (cosmosQueryResponse._count == 0)
