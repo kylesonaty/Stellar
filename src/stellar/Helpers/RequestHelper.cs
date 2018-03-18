@@ -10,7 +10,7 @@ namespace Stellar
     {
         private static HttpClient client = new HttpClient();
 
-        internal async static Task<CosmosHttpResponse> GetResourceResult(string verb, string uri, string apiKey, string queryPath, string resourceValue = "", string body = "", string resourceType = "docs", bool isQuery = false, bool upsert = false)
+        internal async static Task<CosmosHttpResponse> GetResourceResult(string verb, Uri uri, string apiKey, string queryPath, string resourceValue = "", string body = "", string resourceType = "docs", bool isQuery = false, bool upsert = false)
         {
             try
             {
@@ -29,11 +29,11 @@ namespace Stellar
             }
         }
 
-        internal async static Task<HttpResponseMessage> ExecuteResourceRequest(string verb, string url, string key, string queryPath, string resourceType, string resourceValue, string body = "", bool isQuery = false, bool upsert = false)
+        internal async static Task<HttpResponseMessage> ExecuteResourceRequest(string verb, Uri endpoint, string key, string queryPath, string resourceType, string resourceValue, string body = "", bool isQuery = false, bool upsert = false)
         {
             try
             {
-                var uri = new Uri(new Uri(url), queryPath);
+                var uri = new Uri(endpoint, queryPath);
                 var utcDate = DateTime.UtcNow.ToString("r");
                 var authHeader = CreateAuthorizationSignature(utcDate, verb, resourceType, resourceValue, key, "master", "1.0");
                 using (var requestMessage = new HttpRequestMessage())
@@ -48,7 +48,7 @@ namespace Stellar
 
                     if (isQuery)
                         requestMessage.Headers.Add("x-ms-documentdb-isquery", "true");
-                    
+
                     requestMessage.RequestUri = uri;
                     switch (verb.ToLower())
                     {
@@ -88,9 +88,9 @@ namespace Stellar
             {
                 Trace.TraceError(ex.ToString());
                 throw;
-            }    
+            }
         }
-        
+
         internal static string CreateAuthorizationSignature(string utcDate, string verb, string resourceType, string resourceValue, string key, string keyType, string tokenVersion)
         {
             try
@@ -108,13 +108,13 @@ namespace Stellar
                     utcDate.ToLowerInvariant(),
                     ""
                 );
-                
+
                 var hashPayLoad = hmacSha256.ComputeHash(Encoding.UTF8.GetBytes(payLoad));
                 string signature = Convert.ToBase64String(hashPayLoad);
                 return Uri.EscapeDataString(String.Format(System.Globalization.CultureInfo.InvariantCulture, "type=" + keyType + "&ver=" + tokenVersion + "&sig=" + signature));
             }
             catch (Exception ex)
-            { 
+            {
                 Trace.TraceError(ex.ToString());
                 throw;
             }

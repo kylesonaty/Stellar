@@ -10,12 +10,12 @@ namespace Stellar
 
     internal class CosmosQuery : QueryProvider
     {
-        private readonly string _uri;
+        private readonly Uri _uri;
         private readonly string _apiKey;
         private readonly string _basePath;
         private readonly ISerializer _serializer;
 
-        internal CosmosQuery(string uri, string apiKey, string basePath, ISerializer serializer)
+        internal CosmosQuery(Uri uri, string apiKey, string basePath, ISerializer serializer)
         {
             _uri = uri;
             _apiKey = apiKey;

@@ -1,25 +1,44 @@
-﻿using Stellar.Documents;
+﻿using System;
+using Stellar.Documents;
 using Stellar.Serialization;
 
 namespace Stellar
 {
     public class CosmosDbAccount
     {
-        private readonly string _uri;
+        public Uri ServiceEndpoint { get; }
+        public string DatabaseId { get; }
+        public string DefaultCollectionId { get; }
         private readonly string _apiKey;
-        private readonly string _dbName;
-        private readonly string _collectionName;
         private readonly ISerializer _serializer;
 
-        public CosmosDbAccount(string uri, string apiKey, string dbName, string collectionName)
+        /// <summary>
+        /// CosmosDbAccount constructor
+        /// </summary>
+        /// <param name="serviceEndpoint">Endpoint for the CosmosDB service</param>
+        /// <param name="authKeyOrResourceToken">API key to use for accessing the CosmosDB service endpoint</param>
+        /// <param name="databaseId">The CosmosDB database ID for storing and querying documents</param>
+        /// <param name="defaultCollectionId">Default collection for storing and querying documents</param>
+        public CosmosDbAccount(string serviceEndpoint, string authKeyOrResourceToken, string databaseId, string defaultCollectionId) :
+            this(new Uri(serviceEndpoint), authKeyOrResourceToken, databaseId, defaultCollectionId)
+        { }
+
+        /// <summary>
+        /// CosmosDbAccount constructor
+        /// </summary>
+        /// <param name="serviceEndpoint">Endpoint for the CosmosDB service</param>
+        /// <param name="authKeyOrResourceToken">API key to use for accessing the CosmosDB service endpoint</param>
+        /// <param name="databaseId">The CosmosDB database ID for storing and querying documents</param>
+        /// <param name="defaultCollectionId">Default collection for storing and querying documents</param>
+        public CosmosDbAccount(Uri serviceEndpoint, string authKeyOrResourceToken, string databaseId, string defaultCollectionId)
         {
-            _uri = uri;
-            _apiKey = apiKey;
-            _dbName = dbName;
-            _collectionName = collectionName;
+            ServiceEndpoint = serviceEndpoint;
+            _apiKey = authKeyOrResourceToken;
+            DatabaseId = databaseId;
+            DefaultCollectionId = defaultCollectionId;
             _serializer = new JsonNetSerializer(); // Not injecting this yet.
 
-            Documents = new DocumentsManager(_uri, _apiKey, _dbName, _collectionName, _serializer);
+            Documents = new DocumentsManager(ServiceEndpoint, _apiKey, DatabaseId, DefaultCollectionId, _serializer);
         }
 
         public IDocuments Documents { get; }

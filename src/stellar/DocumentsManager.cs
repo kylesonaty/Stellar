@@ -1,18 +1,18 @@
-﻿using Stellar.Documents;
-using Stellar.Serialization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Stellar.Documents;
+using Stellar.Serialization;
 
 namespace Stellar
 {
     internal class DocumentsManager : IDocuments
     {
-        private readonly string _uri;
+        private readonly Uri _uri;
         private readonly string _apiKey;
         private readonly string _dbName;
         private readonly string _collectionName;
@@ -20,7 +20,7 @@ namespace Stellar
         private readonly string _basePath;
         private readonly QueryProvider _queryProvider;
 
-        public DocumentsManager(string uri, string apiKey, string dbName, string collectionName, ISerializer serializer)
+        public DocumentsManager(Uri uri, string apiKey, string dbName, string collectionName, ISerializer serializer)
         {
             _uri = uri;
             _apiKey = apiKey;
@@ -33,7 +33,7 @@ namespace Stellar
 
         public async Task<CosmosHttpResponse> Delete(string id)
         {
-            var queryPath =  $"{_basePath}/{id}";
+            var queryPath = $"{_basePath}/{id}";
             var response = await GetResourceResult("delete", queryPath, queryPath);
             return response;
         }
@@ -121,7 +121,7 @@ namespace Stellar
 
                 query.Parameters = DictionaryHelper.ToCosmosQueryParameterList(dictionary);
             }
-            
+
             return _serializer.Serialize(query); // might have to use different method, this one adds type parameter
         }
     }
