@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
@@ -27,6 +28,16 @@ namespace Stellar.Samples
                 Console.WriteLine($"Status: {response.StatusCode}");
                 Console.WriteLine($"Body: {response.Body}");
                 Console.WriteLine(new string('-', Console.WindowWidth));
+
+                var families = await docs.Query<Family>("SELECT * FROM c WHERE c.lastName = 'Andersen' ORDER BY c.address.state");
+                Console.WriteLine($"Found {families.Count()} Andersen families.");
+
+                families = await docs.Query<Family>("SELECT * FROM c ORDER BY c.address.state");
+                Console.WriteLine($"Found {families.Count()} families ordered by state.");
+
+                families = await docs.Query<Family>("SELECT * FROM c");
+                Console.WriteLine($"Found {families.Count()} total families.");
+
 
                 Console.WriteLine("Retrieving stored family.");
                 var storedFamily = await docs.Get<Family>(family.Id);

@@ -61,11 +61,30 @@ namespace Stellar
         public async Task<IEnumerable<T>> Query<T>(string sql, object param = null)
         {
             var resourceValue = _basePath.Substring(0, _basePath.LastIndexOf('/'));
-            var regex = new Regex(@"(?<=\bfrom\s)(\w+)");
-            var character = regex.Match(sql.ToLower());
-            var result = character.Captures[0];
+            var regex = new Regex(@"\s+from\s+(?'collectionIdentifier'\w+)($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Multiline, TimeSpan.FromMilliseconds(10));
+            var match = regex.Match(sql);
+            if (!match.Groups["collectionIdentifier"].Success)
+                throw new FormatException("Unable to understand SQL query. Ensure that it has one and only one FROM statement.");
+            var collectionIdentifier = match.Groups["collectionIdentifier"].Value;
 
-            sql = sql + " and " + result + "._type = \"" + typeof(T).FullName + "\"";
+            var typeClause = "(" + collectionIdentifier + "._type = '" + typeof(T).FullName + "')";
+
+            regex = new Regex(@"\s+where\s+(?'clause'(.|\s)+?)(Order|$)", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(10));
+            match = regex.Match(sql);
+            if (match.Groups["clause"].Success)
+            {
+                sql = sql.Insert(match.Groups["clause"].Index + match.Groups["clause"].Length, ") ")
+                .Insert(match.Groups["clause"].Index, typeClause + " AND (");
+            }
+            else
+            {
+                regex = new Regex(@"\s+order\s+by\s+.*", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(10));
+                match = regex.Match(sql);
+                if (match.Success)
+                    sql = sql.Insert(match.Index, " WHERE " + typeClause + " ");
+                else
+                    sql += " WHERE " + typeClause;
+            }
 
             var query = CreateCosmosQueryJson(sql, param);
             var response = await GetResourceResult("post", _basePath, resourceValue, query, jsonQuery: true);
