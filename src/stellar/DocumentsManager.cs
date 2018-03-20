@@ -49,25 +49,54 @@ namespace Stellar
         }
 
         /// <summary>
-        /// Query document db using Cosmos SQL
+        /// Query Cosmos DB with ad-hoc SQL
         /// </summary>
         /// <remarks>
-        /// This is a hack and will eventually go away. The goal is to make a LINQ to Cosmos SQL API.
+        /// This may eventually go away. The goal is to make a LINQ to Cosmos SQL API. However there
+        /// will always be edge cases.
         /// </remarks>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="sql"></param>
-        /// <param name="param"></param>
+        /// <typeparam name="T">Source and Response type</typeparam>
+        /// <param name="sql">Cosmos SQL query</param>
+        /// <param name="param">SQL Parameters</param>
         /// <returns></returns>
-        public async Task<IEnumerable<T>> Query<T>(string sql, object param = null)
+        public async Task<IEnumerable<T>> Query<T>(string sql, object param = null) => await Query<T, T>(sql, param);
+
+        /// <summary>
+        /// Query Cosmos DB with ad-hoc SQL
+        /// </summary>
+        /// <remarks>
+        /// This may eventually go away. The goal is to make a LINQ to Cosmos SQL API. However there
+        /// will always be edge cases.
+        /// </remarks>
+        /// <typeparam name="T1">Source type</typeparam>
+        /// <typeparam name="T2">Response type</typeparam>
+        /// <param name="sql">Cosmos SQL query</param>
+        /// <param name="param">SQL Parameters</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<T2>> Query<T1, T2>(string sql, object param = null)
         {
+            sql = InjectSqlTypeClause(sql, typeof(T1));
             var resourceValue = _basePath.Substring(0, _basePath.LastIndexOf('/'));
-            var regex = new Regex(@"\s+from\s+(?'collectionIdentifier'\w+)($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Multiline, TimeSpan.FromMilliseconds(10));
+            var query = CreateCosmosQueryJson(sql, param);
+            var response = await GetResourceResult("post", _basePath, resourceValue, query, jsonQuery: true);
+            if (response.StatusCode != HttpStatusCode.OK)
+                throw new CosmosQueryException(response.Body);
+
+            var cosmosQueryResponse = _serializer.Deserailize<CosmosQueryResponse>(response.Body);
+            if (cosmosQueryResponse._count == 0)
+                return Enumerable.Empty<T2>();
+            return _serializer.Deserailize<List<T2>>(cosmosQueryResponse.Documents.ToString());
+        }
+
+        private string InjectSqlTypeClause(string sql, Type type)
+        {
+            var regex = new Regex(@"\s+from\s+(?'collectionIdentifier'\w+)($|\s+)", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(10));
             var match = regex.Match(sql);
             if (!match.Groups["collectionIdentifier"].Success)
                 throw new FormatException("Unable to understand SQL query. Ensure that it has one and only one FROM statement.");
             var collectionIdentifier = match.Groups["collectionIdentifier"].Value;
 
-            var typeClause = "(" + collectionIdentifier + "._type = '" + typeof(T).FullName + "')";
+            var typeClause = "(" + collectionIdentifier + "._type = '" + type.FullName + "')";
 
             regex = new Regex(@"\s+where\s+(?'clause'(.|\s)+?)(Order|$)", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(10));
             match = regex.Match(sql);
@@ -86,15 +115,7 @@ namespace Stellar
                     sql += " WHERE " + typeClause;
             }
 
-            var query = CreateCosmosQueryJson(sql, param);
-            var response = await GetResourceResult("post", _basePath, resourceValue, query, jsonQuery: true);
-            if (response.StatusCode != HttpStatusCode.OK)
-                throw new CosmosQueryException(response.Body);
-
-            var cosmosQueryResponse = _serializer.Deserailize<CosmosQueryResponse>(response.Body);
-            if (cosmosQueryResponse._count == 0)
-                return new List<T>();
-            return _serializer.Deserailize<List<T>>(cosmosQueryResponse.Documents.ToString());
+            return sql;
         }
 
         public CosmosQueryable<T> Query<T>()

@@ -38,6 +38,15 @@ namespace Stellar.Samples
                 families = await docs.Query<Family>("SELECT * FROM c");
                 Console.WriteLine($"Found {families.Count()} total families.");
 
+                Console.WriteLine(new string('-', Console.WindowWidth));
+                Console.WriteLine($"Last names found...");
+                var lastNames = await docs.Query<Family, string>("SELECT VALUE c.lastName FROM c");
+                foreach (var lastName in lastNames)
+                {
+                    Console.WriteLine(lastName);
+                }
+                Console.WriteLine(new string('-', Console.WindowWidth));
+
 
                 Console.WriteLine("Retrieving stored family.");
                 var storedFamily = await docs.Get<Family>(family.Id);
