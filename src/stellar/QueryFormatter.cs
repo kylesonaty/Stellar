@@ -78,7 +78,7 @@ namespace Stellar
                 case ExpressionType.Equal:
                     _sb.Append(" = ");
                     break;
-                case ExpressionType.NotEqual:
+                case ExpressionType.NotEqual: 
                     _sb.Append(" <> ");
                     break;
                 case ExpressionType.LessThan:
@@ -184,6 +184,24 @@ namespace Stellar
                 AppendNewLine(Indentation.Same);
                 _sb.Append("WHERE ");
                 Visit(select.Where);
+            }
+
+            if (select.OrderBy != null && select.OrderBy.Count > 0)
+            {
+                AppendNewLine(Indentation.Same);
+                _sb.Append("ORDER BY ");
+                for (int i = 0; i < select.OrderBy.Count; i++)
+                {
+                    var exp = select.OrderBy[i];
+                    if (i > 0)
+                        _sb.Append(",");
+
+                    Visit(exp.Expression);
+                    if(exp.OrderType != OrderType.Ascending)
+                    {
+                        _sb.Append(" DESC");
+                    }
+                }
             }
 
             return select;

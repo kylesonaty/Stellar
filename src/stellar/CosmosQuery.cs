@@ -52,6 +52,7 @@ namespace Stellar
             {
                 expression = Evaluator.PartialEval(expression);
                 expression = new QueryBinder().Bind(expression);
+                expression = new OrderByRewritter().Rewrite(expression);
                 expression = new RedundantSubqueryRemover().Remove(expression);
                 projection = (ProjectionExpression)expression;
             }

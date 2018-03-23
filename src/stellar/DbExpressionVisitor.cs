@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
@@ -42,11 +43,34 @@ namespace Stellar
             var from = VisitSource(select.From);
             var where = Visit(select.Where);
             var columns = VisitColumnDeclarations(select.Columns);
-            if (from != select.From || where != select.Where || columns != select.Columns)
+            var orderBy = VisitOrderBy(select.OrderBy);
+            if (from != select.From || where != select.Where || columns != select.Columns || orderBy != select.OrderBy)
             {
-                return new SelectExpression(select.Type, select.Alias, columns, from, where);
+                return new SelectExpression(select.Type, select.Alias, columns, from, where, orderBy);
             }
             return select;
+        }
+
+        private ReadOnlyCollection<OrderExpression> VisitOrderBy(ReadOnlyCollection<OrderExpression> expressions)
+        {
+            if (expressions != null)
+            {
+                List<OrderExpression> alternate = null;
+                for (int i = 0; i < expressions.Count; i++)
+                {
+                    var expr = expressions[i];
+                    var e = Visit(expr.Expression);
+                    if (alternate == null && e != expr.Expression)
+                    {
+                        alternate = expressions.Take(1).ToList();
+                    }
+                }
+                if (alternate != null)
+                {
+                    return alternate.AsReadOnly();
+                }
+            }
+            return expressions;
         }
 
         protected virtual Expression VisitSource(Expression source)

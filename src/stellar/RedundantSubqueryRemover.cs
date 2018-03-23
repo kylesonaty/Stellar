@@ -46,7 +46,7 @@ namespace Stellar
 
                     if (where != select.Where)
                     {
-                        return new SelectExpression(select.Type, select.Alias, select.Columns, select.From, where);
+                        return new SelectExpression(select.Type, select.Alias, select.Columns, select.From, where, select.OrderBy);
                     }
                 }
             }

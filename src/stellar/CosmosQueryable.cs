@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 namespace Stellar
 {
-    public class CosmosQueryable<T> : ICosmosQueryable<T>
+    public class CosmosQueryable<T> : ICosmosQueryable<T>, IOrderedQueryable<T>, IOrderedQueryable
     {
         public Type ElementType => typeof(T);
 

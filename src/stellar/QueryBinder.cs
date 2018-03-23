@@ -10,6 +10,7 @@ namespace Stellar
     {
         ColumnProjector _columnProjector;
         Dictionary<ParameterExpression, Expression> _map;
+        List<OrderExpression> _thenBys;
         int _aliasCount;
 
         internal QueryBinder()
@@ -57,10 +58,51 @@ namespace Stellar
                         return BindWhere(m.Type, m.Arguments[0], (LambdaExpression)StripQuotes(m.Arguments[1]));
                     case "Select":
                         return BindSelect(m.Type, m.Arguments[0], (LambdaExpression)StripQuotes(m.Arguments[1]));
+                    case "OrderBy":
+                        return BindOrderBy(m.Type, m.Arguments[0], (LambdaExpression)StripQuotes(m.Arguments[1]), OrderType.Ascending);
+                    case "OrderByDescending":
+                        return BindOrderBy(m.Type, m.Arguments[0], (LambdaExpression)StripQuotes(m.Arguments[1]), OrderType.Descending);
+                    case "ThenBy":
+                        return BindThenBy(m.Arguments[0], (LambdaExpression)StripQuotes(m.Arguments[1]), OrderType.Ascending);
+                    case "ThenByDescending":
+                        return BindThenBy(m.Arguments[0], (LambdaExpression)StripQuotes(m.Arguments[1]), OrderType.Descending);
+
                 }
                 throw new NotSupportedException($"The method '${m.Method.Name}' is not supported");
             }
             return base.VisitMethodCall(m);
+        }
+
+        private Expression BindThenBy(Expression source, LambdaExpression orderSelector, OrderType orderType)
+        {
+            if (_thenBys == null)
+                _thenBys = new List<OrderExpression>();
+
+            _thenBys.Add(new OrderExpression(orderType,orderSelector));
+            return Visit(source);
+        }
+
+        private Expression BindOrderBy(Type resultType, Expression source, LambdaExpression orderSelector, OrderType orderType)
+        {
+            var thenBys = _thenBys;
+            _thenBys = null;
+            var projection = (ProjectionExpression)Visit(source);
+            _map[orderSelector.Parameters[0]] = projection.Projector;
+            var orderings = new List<OrderExpression>();
+            orderings.Add(new OrderExpression(orderType, Visit(orderSelector.Body)));
+            if (thenBys != null)
+            {
+                for (int i = 0; i < thenBys.Count; i++)
+                {
+                    var tb = thenBys[i];
+                    var lambda = (LambdaExpression)tb.Expression;
+                    _map[lambda.Parameters[0]] = projection.Projector;
+                    orderings.Add(new OrderExpression(tb.OrderType, Visit(lambda.Body)));
+                }
+            }
+            var alias = GetNextAlias();
+            var pc = ProjectColumns(projection.Projector, alias, projection.Source.Alias);
+            return new ProjectionExpression(new SelectExpression(resultType, alias, pc.Columns, projection.Source, null, orderings.AsReadOnly()), pc.Projector);
         }
 
         private Expression BindWhere(Type resultType, Expression source, LambdaExpression predicate)
@@ -70,7 +112,7 @@ namespace Stellar
             var where = Visit(predicate.Body);
             var alias = GetNextAlias();
             var pc = ProjectColumns(projection.Projector, alias, GetExistingAlias(projection.Source));
-            return new ProjectionExpression(new SelectExpression(resultType, alias, pc.Columns, projection.Source, where), pc.Projector);
+            return new ProjectionExpression(new SelectExpression(resultType, alias, pc.Columns, projection.Source, where, null), pc.Projector);
         }
 
         private Expression BindSelect(Type resultType, Expression source, LambdaExpression selector)
@@ -80,7 +122,7 @@ namespace Stellar
             var expression = Visit(selector.Body);
             var alias = GetNextAlias();
             var pc = ProjectColumns(expression, alias, GetExistingAlias(projection.Source));
-            return new ProjectionExpression(new SelectExpression(resultType, alias, pc.Columns, projection.Source, null), pc.Projector);
+            return new ProjectionExpression(new SelectExpression(resultType, alias, pc.Columns, projection.Source, null, null), pc.Projector);
         }
 
         private static string GetExistingAlias(Expression source)
@@ -148,7 +190,7 @@ namespace Stellar
 
             var projector = Expression.MemberInit(Expression.New(table.ElementType), bindings);
             var resultType = typeof(IEnumerable<>).MakeGenericType(table.ElementType);
-            return new ProjectionExpression(new SelectExpression(resultType, selectAlias, columns, new TableExpression(resultType, tableAlias, GetTableName(table)), null), projector);
+            return new ProjectionExpression(new SelectExpression(resultType, selectAlias, columns, new TableExpression(resultType, tableAlias, GetTableName(table)), null, null), projector);
         }
 
         protected override Expression VisitConstant(ConstantExpression c)
