@@ -26,8 +26,9 @@ namespace Stellar
         public override object Execute(Expression expression)
         {
             var resourceValue = _basePath.Substring(0, _basePath.LastIndexOf('/'));
-            var command = Translate(expression);
-            var query = CreateCosmosQueryJson(command, null);
+            var translateResult = Translate(expression);
+            var projector = translateResult.Projector.Compile();
+            var query = CreateCosmosQueryJson(translateResult.CommandText, null);
             var response = HttpRequestHelper.GetResourceResult("post", _uri, _apiKey, _basePath, resourceValue, query, isQuery: true).Result;
             if (response.StatusCode != HttpStatusCode.OK)
                 throw new CosmosQueryException(response.Body);
@@ -41,13 +42,23 @@ namespace Stellar
 
         public override string GetQueryText(Expression expression)
         {
-            return Translate(expression);
+            return Translate(expression).CommandText;
         }
 
-        private string Translate(Expression expression)
+        private TranslateResult Translate(Expression expression)
         {
-            expression = Evaluator.PartialEval(expression);
-            return new QueryTranslator().Translate(expression);
+            var projection = expression as ProjectionExpression;
+            if (projection == null)
+            {
+                expression = Evaluator.PartialEval(expression);
+                expression = new QueryBinder().Bind(expression);
+                expression = new RedundantSubqueryRemover().Remove(expression);
+                projection = (ProjectionExpression)expression;
+            }
+            
+            var commandText = new QueryFormatter().Format(projection.Source);
+            var projector = new ProjectionBuilder().Build(projection.Projector);
+            return new TranslateResult { CommandText = commandText, Projector = projector };
         }
 
         private string CreateCosmosQueryJson(string sql, object param)

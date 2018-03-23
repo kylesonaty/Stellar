@@ -2,13 +2,7 @@
 
 namespace Stellar
 {
-    public interface ICosmosQueryable<T> : IQueryable<T>
-    {
+    public interface ICosmosQueryable<T> : IQueryable<T> { }
 
-    }
-
-    public interface ICosmosQueryable : IQueryable
-    {
-
-    }
+    public interface ICosmosQueryable : IQueryable { }
 }
