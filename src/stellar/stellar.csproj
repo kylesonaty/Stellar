@@ -9,11 +9,12 @@
     <Authors>Kyle Sonaty</Authors>
     <RepositoryUrl>https://github.com/kylesonaty/stellar</RepositoryUrl>
     <Copyright>Copyright 2017</Copyright>
-    <Version>0.0.1</Version>
+    <VersionPrefix>0.0.2</VersionPrefix>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="System.Net.Http" Version="4.3.3" />
+    
   </ItemGroup>
 
 </Project>

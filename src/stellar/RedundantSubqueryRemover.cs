@@ -36,7 +36,7 @@ namespace Stellar
                     {
                         if (where != null)
                         {
-                            where = Expression.Add(fromSelect.Where, where);
+                            where = Expression.And(fromSelect.Where, where);
                         }
                         else
                         {

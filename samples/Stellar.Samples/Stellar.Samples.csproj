@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\stellar\Stellar.csproj" />
+    <ProjectReference Include="..\..\src\stellar\Stellar.csproj" />
   </ItemGroup>
 
 </Project>

@@ -119,6 +119,11 @@ namespace Stellar
                         _sb.Append(((bool)c.Value) ? 1 : 0);
                         break;
                     case TypeCode.String:
+                        if (c.Value == "_type")
+                        { // _type will always be on the root object, so alias will be t0
+                            _sb.Append("t0." + c.Value);
+                            break;
+                        }
                         _sb.Append("'");
                         _sb.Append(c.Value);
                         _sb.Append("'");

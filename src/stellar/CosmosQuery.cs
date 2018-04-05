@@ -51,6 +51,7 @@ namespace Stellar
             if (projection == null)
             {
                 expression = Evaluator.PartialEval(expression);
+                expression = TypePredicateInjector.Inject(expression);
                 expression = new QueryBinder().Bind(expression);
                 expression = new OrderByRewritter().Rewrite(expression);
                 expression = new RedundantSubqueryRemover().Remove(expression);

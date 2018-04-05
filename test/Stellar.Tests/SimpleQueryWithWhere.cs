@@ -6,7 +6,7 @@ namespace Stellar.Tests
 {
     public class SimpleQueryWithWhere
     {
-        private CosmosDbAccount BogusCosmosDbAccount => new Stellar.CosmosDbAccount(@"http://www.bogusendpoint.com", "bogustoken", "bogusdb", "");
+        private CosmosDbAccount BogusCosmosDbAccount => new CosmosDbAccount(@"http://www.bogusendpoint.com", "bogustoken", "bogusdb", "");
 
         private const int testValue = 20;
 

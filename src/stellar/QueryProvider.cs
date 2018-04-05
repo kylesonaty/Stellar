@@ -27,7 +27,7 @@ namespace Stellar
 
         object IQueryProvider.Execute(Expression expression)
         {
-            return this.Execute(expression);
+            return Execute(expression);
         }
 
         public TResult Execute<TResult>(Expression expression)
