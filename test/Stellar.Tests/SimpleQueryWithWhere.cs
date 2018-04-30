@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Tests;
 using Xunit;
 
@@ -40,6 +41,16 @@ namespace Stellar.Tests
             Assert.Contains("where", testObjectsQueryWithVariableAsString);
             Assert.Contains("someintproperty", testObjectsQueryWithVariableAsString);
             Assert.Contains(testValue.ToString(), testObjectsQueryWithVariableAsString);
+        }
+
+        [Fact]
+        public void WhereClauseWithGuid()
+        {
+            var testObjectsQueryAsString = BogusCosmosDbAccount.Documents.Query<TestObject>()
+                                                .Where(x => x.GuidId == Guid.Empty)
+                                                .ToString().ToLower();
+
+            Assert.NotNull(testObjectsQueryAsString);
         }
     }
 }

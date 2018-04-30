@@ -129,6 +129,13 @@ namespace Stellar
                         _sb.Append("'");
                         break;
                     case TypeCode.Object:
+                        if (c.Type == typeof(Guid))
+                        {
+                            _sb.Append("'");
+                            _sb.Append(c.Value);
+                            _sb.Append("'");
+                            break;
+                        }
                         throw new NotSupportedException($"The constant for '{c.Value}' is not supported");
                     default:
                         _sb.Append(c.Value);
