@@ -251,7 +251,8 @@ namespace Stellar
             if (m.Expression != null && m.Expression.NodeType == ExpressionType.MemberInit)
             {
                 _sb.Append("t0.");
-                _sb.Append(m.Member.Name.ToLower()); // TODO: fix this, to camel case or better yet to the same serialize setting as we persists to cosmos
+                var name =  char.ToLowerInvariant(m.Member.Name[0]) + m.Member.Name.Substring(1);
+                _sb.Append(name); // TODO: fix this to the same serialize setting as we persists to cosmos
                 return m;
             }
             return m;
