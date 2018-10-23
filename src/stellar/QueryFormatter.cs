@@ -255,6 +255,14 @@ namespace Stellar
                 _sb.Append(name); // TODO: fix this to the same serialize setting as we persists to cosmos
                 return m;
             }
+            else if (m.Expression != null && m.Expression.NodeType == ExpressionType.MemberAccess && m.Expression.Type.IsGenericType)
+            {
+                _sb.Append("t0.");
+                var exp = m.Expression as MemberExpression;
+                var name = char.ToLowerInvariant(exp.Member.Name[0]) + exp.Member.Name.Substring(1);
+                _sb.Append(name);
+                return m;
+            }
             return m;
         }
 
