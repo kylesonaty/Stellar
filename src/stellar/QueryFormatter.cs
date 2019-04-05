@@ -47,7 +47,7 @@ namespace Stellar
         {
             if (m.Method.Name == "Contains" && m.NodeType == ExpressionType.Call && m.Arguments.Count == 1)
             {
-                _sb.Append("CONTAINS(t0.");
+                _sb.Append("ARRAY_CONTAINS(t0.");
                 var memberAccess = m.Object as MemberExpression;
                 var name = char.ToLowerInvariant(memberAccess.Member.Name[0]) + memberAccess.Member.Name.Substring(1);
                 _sb.Append(name);
@@ -58,7 +58,7 @@ namespace Stellar
             }
             else if (m.Method.Name == "Contains" && m.NodeType == ExpressionType.Call && m.Arguments.Count == 2)
             {
-                _sb.Append("CONTAINS(t0.");
+                _sb.Append("ARRAY_CONTAINS(t0.");
                 var memberAccess = m.Arguments[0] as MemberExpression;
                 var name = char.ToLowerInvariant(memberAccess.Member.Name[0]) + memberAccess.Member.Name.Substring(1);
                 _sb.Append(name);

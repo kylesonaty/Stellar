@@ -79,7 +79,7 @@ namespace Stellar.Tests
             var query = BogusCosmosDbAccount.Documents.Query<TestObject>()
                             .Where(x => x.Ids.Contains(1));
             var queryString = query.ToString();
-            Assert.Contains("CONTAINS(t0.ids, 1)", queryString);
+            Assert.Contains("ARRAY_CONTAINS(t0.ids, 1)", queryString);
         }
 
 
@@ -90,7 +90,7 @@ namespace Stellar.Tests
             var query = BogusCosmosDbAccount.Documents.Query<TestObject>()
                             .Where(x => x.Ints.Contains(id));
             var queryString = query.ToString();
-            Assert.Contains("CONTAINS(t0.ints, 1)", queryString);
+            Assert.Contains("ARRAY_CONTAINS(t0.ints, 1)", queryString);
         }
     }
 }
