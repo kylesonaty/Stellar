@@ -45,6 +45,28 @@ namespace Stellar
 
         protected override Expression VisitMethodCall(MethodCallExpression m)
         {
+            if (m.Method.Name == "Contains" && m.NodeType == ExpressionType.Call && m.Arguments.Count == 1)
+            {
+                _sb.Append("CONTAINS(t0.");
+                var memberAccess = m.Object as MemberExpression;
+                var name = char.ToLowerInvariant(memberAccess.Member.Name[0]) + memberAccess.Member.Name.Substring(1);
+                _sb.Append(name);
+                _sb.Append(", ");
+                Visit(m.Arguments[0]);
+                _sb.Append(")");
+                return m;
+            }
+            else if (m.Method.Name == "Contains" && m.NodeType == ExpressionType.Call && m.Arguments.Count == 2)
+            {
+                _sb.Append("CONTAINS(t0.");
+                var memberAccess = m.Arguments[0] as MemberExpression;
+                var name = char.ToLowerInvariant(memberAccess.Member.Name[0]) + memberAccess.Member.Name.Substring(1);
+                _sb.Append(name);
+                _sb.Append(", ");
+                Visit(m.Arguments[1]);
+                _sb.Append(")");
+                return m;
+            }
             throw new NotSupportedException($"The method '{m.Method.Name}' is not supported");
         }
 

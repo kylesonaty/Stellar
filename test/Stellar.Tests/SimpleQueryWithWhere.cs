@@ -73,5 +73,24 @@ namespace Stellar.Tests
             Assert.Contains(".idname.id = 1", queryString);
         }
 
+        [Fact]
+        public void WhereWithContains()
+        {
+            var query = BogusCosmosDbAccount.Documents.Query<TestObject>()
+                            .Where(x => x.Ids.Contains(1));
+            var queryString = query.ToString();
+            Assert.Contains("CONTAINS(t0.ids, 1)", queryString);
+        }
+
+
+        [Fact]
+        public void WhereWithContainsWithVariable()
+        {
+            var id = 1;
+            var query = BogusCosmosDbAccount.Documents.Query<TestObject>()
+                            .Where(x => x.Ints.Contains(id));
+            var queryString = query.ToString();
+            Assert.Contains("CONTAINS(t0.ints, 1)", queryString);
+        }
     }
 }

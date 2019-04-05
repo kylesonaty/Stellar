@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Tests
 {
@@ -10,6 +11,8 @@ namespace Tests
         public Nullable<Guid> NullableGuid { get; set; }
         public Nullable<int> NullableInt { get; set; }
         public GenericObject<int> IdName { get; set; }
+        public List<int> Ids { get; set; }
+        public IEnumerable<int> Ints { get; set; }
     }
 
     public class GenericObject<T>

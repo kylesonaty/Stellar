@@ -66,7 +66,8 @@ namespace Stellar
                         return BindThenBy(m.Arguments[0], (LambdaExpression)StripQuotes(m.Arguments[1]), OrderType.Ascending);
                     case "ThenByDescending":
                         return BindThenBy(m.Arguments[0], (LambdaExpression)StripQuotes(m.Arguments[1]), OrderType.Descending);
-
+                    case "Contains":
+                        return base.VisitMethodCall(m);
                 }
                 throw new NotSupportedException($"The method '${m.Method.Name}' is not supported");
             }
