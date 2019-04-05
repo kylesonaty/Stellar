@@ -9,5 +9,12 @@ namespace Tests
         public Guid GuidId { get; set; }
         public Nullable<Guid> NullableGuid { get; set; }
         public Nullable<int> NullableInt { get; set; }
+        public GenericObject<int> IdName { get; set; }
+    }
+
+    public class GenericObject<T>
+    {
+        public T Id { get; set; }
+        public string Name { get; set; }
     }
 }

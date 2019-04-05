@@ -59,7 +59,18 @@ namespace Stellar.Tests
             var query = BogusCosmosDbAccount.Documents.Query<TestObject>()
                             .Where(x => x.NullableGuid.Value == Guid.Empty);
 
-            Assert.NotNull(query.ToString());
+            var queryString = query.ToString();
+            Assert.NotNull(queryString);
+            Assert.Contains(".nullableGuid = '0000", queryString);
+        }
+
+        [Fact]
+        public void WhereWithGeneric()
+        {
+            var query = BogusCosmosDbAccount.Documents.Query<TestObject>()
+                            .Where(x => x.IdName.Id == 1);
+            var queryString = query.ToString().ToLower();
+            Assert.Contains(".idname.id = 1", queryString);
         }
 
     }

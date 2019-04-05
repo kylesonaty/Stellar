@@ -257,14 +257,41 @@ namespace Stellar
             }
             else if (m.Expression != null && m.Expression.NodeType == ExpressionType.MemberAccess && m.Expression.Type.IsGenericType)
             {
-                _sb.Append("t0.");
-                var exp = m.Expression as MemberExpression;
-                var name = char.ToLowerInvariant(exp.Member.Name[0]) + exp.Member.Name.Substring(1);
-                _sb.Append(name);
-                return m;
+                return VisitGenericMember(m);
+
             }
             return m;
         }
 
+        protected Expression VisitGenericMember(MemberExpression m)
+        {
+            if (m.Expression != null && m.Expression.NodeType == ExpressionType.MemberAccess && m.Expression.Type.IsGenericType)
+            {
+                var exp = m.Expression as MemberExpression;
+                if (exp.Expression.NodeType == ExpressionType.MemberInit)
+                {
+                    _sb.Append("t0.");
+                    if (!(m.Member.DeclaringType.IsGenericType && m.Member.DeclaringType.Namespace == "System" && m.Member.DeclaringType.Name.StartsWith("Nullable")))
+                    {
+                        var parentProperty = char.ToLowerInvariant(exp.Member.Name[0]) + exp.Member.Name.Substring(1);
+                        _sb.Append(parentProperty + ".");
+                        var name = char.ToLowerInvariant(m.Member.Name[0]) + m.Member.Name.Substring(1);
+                        _sb.Append(name); // TODO: fix this to the same serialize setting as we persists to cosmos
+                    }
+                    else
+                    {
+                        var name = char.ToLowerInvariant(exp.Member.Name[0]) + exp.Member.Name.Substring(1);
+                        _sb.Append(name); // TODO: fix this to the same serialize setting as we persists to cosmos
+                    }
+                    
+                    return m;
+                }
+                else if (exp.Expression.NodeType == ExpressionType.MemberAccess && m.Expression.Type.IsGenericType)
+                {
+                    return VisitGenericMember(exp);
+                }
+            }
+            return m;
+        }
     }
 }
