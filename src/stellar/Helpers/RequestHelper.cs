@@ -29,7 +29,7 @@ namespace Stellar
             }
         }
 
-        internal async static Task<HttpResponseMessage> ExecuteResourceRequest(string verb, Uri endpoint, string key, string queryPath, string resourceType, string resourceValue, string body = "", bool isQuery = false, bool upsert = false)
+        internal async static Task<HttpResponseMessage> ExecuteResourceRequest(string verb, Uri endpoint, string key, string queryPath, string resourceType, string resourceValue, string body = "", bool isQuery = false, bool upsert = false, string partitionKey = null)
         {
             try
             {
@@ -42,6 +42,9 @@ namespace Stellar
                     requestMessage.Headers.Add("x-ms-date", utcDate);
                     requestMessage.Headers.Add("x-ms-version", "2015-12-16");
                     requestMessage.Headers.Add("Accept", "application/json");
+
+                    if (!string.IsNullOrEmpty(partitionKey))
+                        requestMessage.Headers.Add("x-ms-documentdb-partitionkey", " [ \"" + partitionKey + "\" ] ");
 
                     if (upsert)
                         requestMessage.Headers.Add("x-ms-documentdb-is-upsert", "True");

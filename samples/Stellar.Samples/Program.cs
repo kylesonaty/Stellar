@@ -14,7 +14,12 @@ namespace Stellar.Samples
             DatabaseId = "FamilyDB",
             CollectionId = "FamilyCollection";
 
-        static async Task Main(string[] args)
+        static void Main(string[] args)
+        {
+            Main().Wait();
+        }
+
+        static async Task Main()
         {
             try
             {
@@ -24,7 +29,7 @@ namespace Stellar.Samples
                 var family = GetExampleFamily();
 
                 Console.WriteLine("Storing new family.");
-                var response = await docs.Store(family.Id.ToString(), family);
+                var response = await docs.Store(family.Id.ToString(), family.Address.City, family);
                 Console.WriteLine($"Status: {response.StatusCode}");
                 Console.WriteLine($"Body: {response.Body}");
                 Console.WriteLine(new string('-', Console.WindowWidth));

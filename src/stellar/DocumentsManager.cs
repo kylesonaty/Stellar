@@ -33,8 +33,13 @@ namespace Stellar
 
         public async Task<CosmosHttpResponse> Delete(string id)
         {
+            return await Delete(id, null);
+        }
+
+        public async Task<CosmosHttpResponse> Delete(string id, string partitionKey)
+        {
             var queryPath = $"{_basePath}/{id}";
-            var response = await GetResourceResult("delete", queryPath, queryPath);
+            var response = await GetResourceResult("delete", queryPath, queryPath, partitionKey: partitionKey);
             return response;
         }
 
@@ -125,17 +130,24 @@ namespace Stellar
 
         public async Task<CosmosHttpResponse> Store(string id, object entity)
         {
+            return await Store(id, null, entity);
+        }
+
+
+        public async Task<CosmosHttpResponse> Store(string id, string partitionKey, object entity)
+        {
             var resourceValue = _basePath.Substring(0, _basePath.LastIndexOf('/'));
             var json = _serializer.Serialize(entity);
-            var result = await GetResourceResult("post", _basePath, resourceValue, json, upsert: true);
+            var result = await GetResourceResult("post", _basePath, resourceValue, json, upsert: true, partitionKey: partitionKey);
             return result;
         }
 
-        private async Task<CosmosHttpResponse> GetResourceResult(string verb, string queryPath, string resourceValue = "", string body = "", string resourceType = "docs", bool jsonQuery = false, bool upsert = false)
+
+        private async Task<CosmosHttpResponse> GetResourceResult(string verb, string queryPath, string resourceValue = "", string body = "", string resourceType = "docs", bool jsonQuery = false, bool upsert = false, string partitionKey = "")
         {
             try
             {
-                var responseMessage = await HttpRequestHelper.ExecuteResourceRequest(verb, _uri, _apiKey, queryPath, "docs", resourceValue, body, jsonQuery, upsert);
+                var responseMessage = await HttpRequestHelper.ExecuteResourceRequest(verb, _uri, _apiKey, queryPath, "docs", resourceValue, body, jsonQuery, upsert, partitionKey);
                 var response = new CosmosHttpResponse
                 {
                     StatusCode = responseMessage.StatusCode,
