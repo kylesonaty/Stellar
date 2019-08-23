@@ -40,14 +40,14 @@ namespace Stellar
         public async Task<CosmosHttpResponse> Delete(string id, string partitionKey)
         {
             var queryPath = $"{_basePath}/{id}";
-            var response = await GetResourceResult("delete", queryPath, queryPath, partitionKey: partitionKey);
+            var response = await HttpRequestHelper.GetResourceResult("delete", _uri, _apiKey, queryPath, queryPath, partitionKey: partitionKey);
             return response.FirstOrDefault();
         }
 
         public async Task<T> Get<T>(string id) where T : class
         {
             var queryPath = $"{_basePath}/{id}";
-            var response = await GetResourceResult("get", queryPath, queryPath);
+            var response = await HttpRequestHelper.GetResourceResult("get", _uri, _apiKey, queryPath, queryPath);
             var r = response.FirstOrDefault();
             if (r.StatusCode == HttpStatusCode.NotFound)
                 return null;
@@ -85,7 +85,7 @@ namespace Stellar
             sql = InjectSqlTypeClause(sql, typeof(T1));
             var resourceValue = _basePath.Substring(0, _basePath.LastIndexOf('/'));
             var query = CreateCosmosQueryJson(sql, param);
-            var responses = await GetResourceResult("post", _basePath, resourceValue, query, jsonQuery: true);
+            var responses = await HttpRequestHelper.GetResourceResult("post", _uri, _apiKey, _basePath, resourceValue, query, isQuery: true);
 
             var list = new List<T2>();
             foreach (var response in responses)
@@ -145,44 +145,8 @@ namespace Stellar
         {
             var resourceValue = _basePath.Substring(0, _basePath.LastIndexOf('/'));
             var json = _serializer.Serialize(entity);
-            var result = await GetResourceResult("post", _basePath, resourceValue, json, upsert: true, partitionKey: partitionKey);
+            var result = await HttpRequestHelper.GetResourceResult("post", _uri, _apiKey, _basePath, resourceValue, json, upsert: true, partitionKey: partitionKey);
             return result.FirstOrDefault();
-        }
-
-
-        private async Task<IEnumerable<CosmosHttpResponse>> GetResourceResult(string verb, string queryPath, string resourceValue = "", string body = "", string resourceType = "docs", bool jsonQuery = false, bool upsert = false, string partitionKey = "")
-        {
-            try
-            {
-                var responses = new List<HttpResponseMessage>();
-                var continuation = "";
-                do
-                {
-                    var responseMessage = await HttpRequestHelper.ExecuteResourceRequest(verb, _uri, _apiKey, queryPath, "docs", resourceValue, body, jsonQuery, upsert, partitionKey, continuation);
-                    responses.Add(responseMessage);
-                    if (responseMessage.Headers.Contains("x-ms-continuation"))
-                        continuation = responseMessage.Headers.GetValues("x-ms-continuation").FirstOrDefault();
-                    else
-                        continuation = null;
-
-                } while (!string.IsNullOrEmpty(continuation));
-
-                var tasks = responses.Select(async r =>
-                {
-                    return new CosmosHttpResponse
-                    {
-                        StatusCode = r.StatusCode,
-                        Body = await r.Content.ReadAsStringAsync()
-                    };
-                });
-                var cosmosResponses = await Task.WhenAll(tasks);
-                return cosmosResponses;
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceError(ex.ToString());
-                throw;
-            }
         }
 
         private string CreateCosmosQueryJson(string sql, object param)

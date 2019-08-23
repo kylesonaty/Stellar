@@ -12,7 +12,7 @@ namespace Stellar
     {
         private static HttpClient client = new HttpClient();
 
-        internal async static Task<IEnumerable<CosmosHttpResponse>> GetResourceResult(string verb, Uri uri, string apiKey, string queryPath, string resourceValue = "", string body = "", string resourceType = "docs", bool isQuery = false, bool upsert = false)
+        internal async static Task<IEnumerable<CosmosHttpResponse>> GetResourceResult(string verb, Uri uri, string apiKey, string queryPath, string resourceValue = "", string body = "", string resourceType = "docs", bool isQuery = false, bool upsert = false, string partitionKey = "")
         {
             try
             {
@@ -20,7 +20,7 @@ namespace Stellar
                 var continuation = "";
                 do
                 {
-                    var responseMessage = await ExecuteResourceRequest(verb, uri, apiKey, queryPath, "docs", resourceValue, body, isQuery, upsert, continuation: continuation);
+                    var responseMessage = await ExecuteResourceRequest(verb, uri, apiKey, queryPath, "docs", resourceValue, body, isQuery, upsert, partitionKey: partitionKey, continuation: continuation);
                     responses.Add(responseMessage);
                     if (responseMessage.Headers.Contains("x-ms-continuation"))
                         continuation = responseMessage.Headers.GetValues("x-ms-continuation").FirstOrDefault();
@@ -39,14 +39,6 @@ namespace Stellar
                 });
                 var cosmosResponses = await Task.WhenAll(tasks);
                 return cosmosResponses;
-
-                //var responseMessage = await ExecuteResourceRequest(verb, uri, apiKey, queryPath, "docs", resourceValue, body, isQuery, upsert);    
-                //var response = new CosmosHttpResponse
-                //{
-                //    StatusCode = responseMessage.StatusCode,
-                //    Body = await responseMessage.Content.ReadAsStringAsync()
-                //};
-                //return response;                
             }
             catch (Exception ex)
             {

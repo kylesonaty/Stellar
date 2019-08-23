@@ -54,9 +54,6 @@ namespace Stellar
                     // here it was using DbDataReader
                     // We have a serializer so i don't think we need to get each row. 
                     // more like we need to project is row for the collection
-
-
-                    return null;
                 }
                 return null;
             }
