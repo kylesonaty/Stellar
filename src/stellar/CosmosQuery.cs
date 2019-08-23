@@ -1,5 +1,6 @@
 ﻿using Stellar.Serialization;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -29,15 +30,25 @@ namespace Stellar
             var translateResult = Translate(expression);
             var projector = translateResult.Projector.Compile();
             var query = CreateCosmosQueryJson(translateResult.CommandText, null);
-            var response = HttpRequestHelper.GetResourceResult("post", _uri, _apiKey, _basePath, resourceValue, query, isQuery: true).Result;
-            if (response.StatusCode != HttpStatusCode.OK)
-                throw new CosmosQueryException(response.Body);
+            var responses = HttpRequestHelper.GetResourceResult("post", _uri, _apiKey, _basePath, resourceValue, query, isQuery: true).Result;
 
             Type type = TypeSystemHelper.GetElementType(expression.Type);
-            var serializationType =  typeof(IEnumerable<>).MakeGenericType(type);
-            var cosmosQueryResponse = _serializer.Deserailize<CosmosQueryResponse>(response.Body);
-            var docs = _serializer.Deserialize(cosmosQueryResponse.Documents.ToString(), serializationType);
-            return docs;
+            var list = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(type));
+            var serializationType = typeof(IEnumerable<>).MakeGenericType(type);
+            foreach (var response in responses)
+            {
+                if (response.StatusCode != HttpStatusCode.OK)
+                    throw new CosmosQueryException(response.Body);
+
+                var cosmosQueryResponse = _serializer.Deserailize<CosmosQueryResponse>(response.Body);
+                var items = _serializer.Deserialize(cosmosQueryResponse.Documents.ToString(), serializationType);
+
+                foreach (var item in (ICollection)items)
+                {
+                    list.Add(item);
+                }
+            }
+            return list;
         }
 
         public override string GetQueryText(Expression expression)

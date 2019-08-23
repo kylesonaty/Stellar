@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,17 +12,41 @@ namespace Stellar
     {
         private static HttpClient client = new HttpClient();
 
-        internal async static Task<CosmosHttpResponse> GetResourceResult(string verb, Uri uri, string apiKey, string queryPath, string resourceValue = "", string body = "", string resourceType = "docs", bool isQuery = false, bool upsert = false)
+        internal async static Task<IEnumerable<CosmosHttpResponse>> GetResourceResult(string verb, Uri uri, string apiKey, string queryPath, string resourceValue = "", string body = "", string resourceType = "docs", bool isQuery = false, bool upsert = false)
         {
             try
             {
-                var responseMessage = await ExecuteResourceRequest(verb, uri, apiKey, queryPath, "docs", resourceValue, body, isQuery, upsert);
-                var response = new CosmosHttpResponse
+                var responses = new List<HttpResponseMessage>();
+                var continuation = "";
+                do
                 {
-                    StatusCode = responseMessage.StatusCode,
-                    Body = await responseMessage.Content.ReadAsStringAsync()
-                };
-                return response;
+                    var responseMessage = await ExecuteResourceRequest(verb, uri, apiKey, queryPath, "docs", resourceValue, body, isQuery, upsert, continuation: continuation);
+                    responses.Add(responseMessage);
+                    if (responseMessage.Headers.Contains("x-ms-continuation"))
+                        continuation = responseMessage.Headers.GetValues("x-ms-continuation").FirstOrDefault();
+                    else
+                        continuation = null;
+
+                } while (!string.IsNullOrEmpty(continuation));
+
+                var tasks = responses.Select(async r =>
+                {
+                    return new CosmosHttpResponse
+                    {
+                        StatusCode = r.StatusCode,
+                        Body = await r.Content.ReadAsStringAsync()
+                    };
+                });
+                var cosmosResponses = await Task.WhenAll(tasks);
+                return cosmosResponses;
+
+                //var responseMessage = await ExecuteResourceRequest(verb, uri, apiKey, queryPath, "docs", resourceValue, body, isQuery, upsert);    
+                //var response = new CosmosHttpResponse
+                //{
+                //    StatusCode = responseMessage.StatusCode,
+                //    Body = await responseMessage.Content.ReadAsStringAsync()
+                //};
+                //return response;                
             }
             catch (Exception ex)
             {
@@ -29,7 +55,7 @@ namespace Stellar
             }
         }
 
-        internal async static Task<HttpResponseMessage> ExecuteResourceRequest(string verb, Uri endpoint, string key, string queryPath, string resourceType, string resourceValue, string body = "", bool isQuery = false, bool upsert = false, string partitionKey = null)
+        internal async static Task<HttpResponseMessage> ExecuteResourceRequest(string verb, Uri endpoint, string key, string queryPath, string resourceType, string resourceValue, string body = "", bool isQuery = false, bool upsert = false, string partitionKey = null, string continuation = null)
         {
             try
             {
@@ -51,6 +77,9 @@ namespace Stellar
 
                     if (isQuery)
                         requestMessage.Headers.Add("x-ms-documentdb-isquery", "true");
+
+                    if (!string.IsNullOrEmpty(continuation))
+                        requestMessage.Headers.Add("x-ms-continuation", continuation);
 
                     requestMessage.RequestUri = uri;
                     switch (verb.ToLower())

@@ -7,7 +7,7 @@ namespace Stellar.Tests
 {
     public class SimpleQueryWithWhere
     {
-        private CosmosDbAccount BogusCosmosDbAccount => new CosmosDbAccount(@"http://www.bogusendpoint.com", "bogustoken", "bogusdb", "");
+        private CosmosDbAccount BogusCosmosDbAccount => new CosmosDbAccount(@"http://www.bogusendpoint.com", "Ym9ndXN0b2tlbg==", "bogusdb", "");
 
         private const int testValue = 20;
 
@@ -91,6 +91,15 @@ namespace Stellar.Tests
                             .Where(x => x.Ints.Contains(id));
             var queryString = query.ToString();
             Assert.Contains("ARRAY_CONTAINS(t0.ints, 1)", queryString);
+        }
+
+        [Fact]
+        public void WhereWithArrayLength()
+        {
+            var query = BogusCosmosDbAccount.Documents.Query<TestObject>()
+                            .Where(x => x.Ints.Count() > 0);
+            var queryString = query.ToString();
+            Assert.Contains("ARRAY_LENGTH(t0.ints)", queryString);
         }
     }
 }

@@ -5,7 +5,7 @@ namespace Tests
 {
     public class SimpleQueryTest
     {
-        private CosmosDbAccount BogusCosmosDbAccount => new CosmosDbAccount(@"http://www.bogusendpoint.com", "bogustoken", "bogusdb", "");
+        private CosmosDbAccount BogusCosmosDbAccount => new CosmosDbAccount(@"http://www.bogusendpoint.com", "Ym9ndXN0b2tlbg==", "bogusdb", "");
 
         [Fact]
         public void SimpleQueryShouldIncludeSelectAndType()

@@ -67,6 +67,15 @@ namespace Stellar
                 _sb.Append(")");
                 return m;
             }
+            else if (m.Method.Name == "Count" && m.NodeType == ExpressionType.Call && m.Arguments.Count == 1)
+            {
+                _sb.Append("ARRAY_LENGTH(t0.");
+                var memberAccess = m.Arguments[0] as MemberExpression;
+                var name = char.ToLowerInvariant(memberAccess.Member.Name[0]) + memberAccess.Member.Name.Substring(1);
+                _sb.Append(name);
+                _sb.Append(")");
+                return m;
+            }
             throw new NotSupportedException($"The method '{m.Method.Name}' is not supported");
         }
 
