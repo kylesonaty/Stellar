@@ -46,7 +46,6 @@
 //        public void Add1000TestObjects()
 //        {
 //            var db = BogusCosmosDbAccount.Documents;
-
 //            var item = new Item
 //            {
 //                Guid = Guid.NewGuid(),
@@ -59,7 +58,6 @@
 //                var result = db.Store(item.Id, item.Name, item).Result;
 //            }
 //            Assert.True(true);
-
 //        }
 
 //        [Fact]
@@ -68,10 +66,25 @@
 //            var db = BogusCosmosDbAccount.Documents;
 //            var query = db.Query<Item>().Where(x => x.Name == "test");
 //            var list = query.ToList();
-
-
 //            Assert.True(list.Count > 100);
+//        }
 
+//        [Fact]
+//        public void GetDateTime()
+//        {
+//            var db = BogusCosmosDbAccount.Documents;
+//            var query = db.Query<TestObject>().Where(x => x.Name == "test" && x.DateTime > DateTime.Now.AddHours(-1));
+//            var list = query.ToList();
+//            Assert.Empty(list);
+//        }
+
+//        [Fact]
+//        public void GetDateTimeOffset()
+//        {
+//            var db = BogusCosmosDbAccount.Documents;
+//            var query = db.Query<TestObject>().Where(x => x.Name == "test" && x.DateTimeOffset > DateTimeOffset.Now.AddHours(-1));
+//            var list = query.ToList();
+//            Assert.Empty(list);
 //        }
 
 //    }

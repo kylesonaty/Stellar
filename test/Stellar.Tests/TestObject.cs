@@ -13,6 +13,8 @@ namespace Tests
         public GenericObject<int> IdName { get; set; }
         public List<int> Ids { get; set; }
         public IEnumerable<int> Ints { get; set; }
+        public DateTime DateTime { get; set; }
+        public DateTimeOffset DateTimeOffset { get; set; }
     }
 
     public class GenericObject<T>

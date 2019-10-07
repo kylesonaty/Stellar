@@ -159,8 +159,17 @@ namespace Stellar
                         _sb.Append(c.Value);
                         _sb.Append("'");
                         break;
+                    case TypeCode.DateTime:
+                        if (c.Type == typeof(DateTime) || c.Type == typeof(DateTimeOffset))
+                        {
+                            _sb.Append("'");
+                            _sb.Append(c.Value);
+                            _sb.Append("'");
+                            break;
+                        }
+                        throw new NotSupportedException($"The constant DateTime for '{c.Value}' is not supported");
                     case TypeCode.Object:
-                        if (c.Type == typeof(Guid))
+                        if (c.Type == typeof(Guid) || c.Type == typeof(DateTimeOffset))
                         {
                             _sb.Append("'");
                             _sb.Append(c.Value);
