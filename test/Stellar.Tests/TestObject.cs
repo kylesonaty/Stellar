@@ -17,6 +17,7 @@ namespace Tests
         public DateTimeOffset DateTimeOffset { get; set; }
         public DateTime? PossibleDateTime { get; set; }
         public DateTimeOffset? PossibleDateTimeOffset { get; set; }
+        public bool IsBool { get; set; }
     }
 
     public class GenericObject<T>

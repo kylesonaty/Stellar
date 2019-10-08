@@ -127,6 +127,9 @@ namespace Stellar
                 case ExpressionType.AndAlso:
                     _sb.Append(" AND ");
                     break;
+                case ExpressionType.OrElse:
+                    _sb.Append(" OR ");
+                    break;
                 default:
                     throw new NotSupportedException($"The binary operator '{b.NodeType}' is not supported");
             }
@@ -147,7 +150,7 @@ namespace Stellar
                 switch (Type.GetTypeCode(c.Value.GetType()))
                 {
                     case TypeCode.Boolean:
-                        _sb.Append(((bool)c.Value) ? 1 : 0);
+                        _sb.Append(c.Value.ToString().ToLower());
                         break;
                     case TypeCode.String:
                         if ((string)c.Value == "_type")

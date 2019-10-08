@@ -105,6 +105,15 @@
 //            Assert.Empty(list);
 //        }
 
+//        [Fact]
+//        public void Get()
+//        {
+//            var db = BogusCosmosDbAccount.Documents;
+//            var query = db.Query<TestObject>().Where(x => x.Name == "test" && x.PossibleDateTimeOffset > DateTimeOffset.Now.AddHours(-1));
+//            var list = query.ToList();
+//            Assert.Empty(list);
+//        }
+
 //    }
 
 //    public class Item

@@ -101,5 +101,40 @@ namespace Stellar.Tests
             var queryString = query.ToString();
             Assert.Contains("ARRAY_LENGTH(t0.ints)", queryString);
         }
+
+        [Fact]
+        public void WhereWithOrElse()
+        {
+            var query = BogusCosmosDbAccount.Documents.Query<TestObject>()
+                            .Where(x => x.Name == "test"
+                            && (x.PossibleDateTime == DateTime.MinValue
+                            || x.SomeIntProperty == 1));
+            var queryString = query.ToString();
+            Assert.Contains("OR", queryString);
+        }
+
+        [Fact]
+        public void WhereWithBoolTrue()
+        {
+            var query = BogusCosmosDbAccount.Documents.Query<TestObject>()
+                            .Where(x => x.Name == "test"
+                            && (x.PossibleDateTime == DateTime.MinValue
+                            || x.IsBool == true));
+            var queryString = query.ToString();
+            Assert.Contains("OR", queryString);
+            Assert.Contains("true", queryString);
+        }
+
+        [Fact]
+        public void WhereWithBoolFalse()
+        {
+            var query = BogusCosmosDbAccount.Documents.Query<TestObject>()
+                            .Where(x => x.Name == "test"
+                            && (x.PossibleDateTime == DateTime.MinValue
+                            || x.IsBool == false));
+            var queryString = query.ToString();
+            Assert.Contains("OR", queryString);
+            Assert.Contains("false", queryString);
+        }
     }
 }
