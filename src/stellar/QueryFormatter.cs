@@ -158,25 +158,56 @@ namespace Stellar
                             _sb.Append("t0." + c.Value);
                             break;
                         }
-                        _sb.Append("'");
+                        _sb.Append("\"");
                         _sb.Append(c.Value);
-                        _sb.Append("'");
+                        _sb.Append("\"");
                         break;
                     case TypeCode.DateTime:
-                        if (c.Type == typeof(DateTime) || c.Type == typeof(DateTime?))
+                        if (c.Type == typeof(DateTime))
                         {
-                            _sb.Append("'");
-                            _sb.Append(c.Value);
-                            _sb.Append("'");
+                            var dt = (DateTime)c.Value;
+                            _sb.Append("\"");
+                            _sb.Append(dt.ToString("O"));
+                            _sb.Append("\"");
                             break;
+                        }
+                        if (c.Type == typeof(DateTime?))
+                        {
+                            var dt = (DateTime?)c.Value;
+                            if (dt.HasValue)
+                            {
+                                _sb.Append("\"");
+                                _sb.Append(dt.Value.ToString("O"));
+                                _sb.Append("\"");
+                                break;
+                            }
                         }
                         throw new NotSupportedException($"The constant DateTime for '{c.Value}' is not supported");
                     case TypeCode.Object:
-                        if (c.Type == typeof(Guid) || c.Type == typeof(DateTimeOffset) || c.Type == typeof(DateTimeOffset?))
+                        if (c.Type == typeof(Guid))
                         {
-                            _sb.Append("'");
+                            _sb.Append("\"");
                             _sb.Append(c.Value);
-                            _sb.Append("'");
+                            _sb.Append("\"");
+                            break;
+                        }
+                        if (c.Type == typeof(DateTimeOffset))
+                        {
+                            var dt = (DateTimeOffset)c.Value;
+                            _sb.Append("\"");
+                            _sb.Append(dt.ToString("O"));
+                            _sb.Append("\"");
+                            break;
+                        }
+                        if (c.Type == typeof(DateTimeOffset?))
+                        {
+                            var dt = (DateTimeOffset?)c.Value;
+                            if (dt.HasValue)
+                            {
+                                _sb.Append("\"");
+                                _sb.Append(dt.Value.ToString("O"));
+                                _sb.Append("\"");
+                            }
                             break;
                         }
                         throw new NotSupportedException($"The constant for '{c.Value}' is not supported, Type: {c.Type}");

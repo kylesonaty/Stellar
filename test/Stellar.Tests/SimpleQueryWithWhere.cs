@@ -136,5 +136,35 @@ namespace Stellar.Tests
             Assert.Contains("OR", queryString);
             Assert.Contains("false", queryString);
         }
+
+        [Fact]
+        public void WhereWithDateTime()
+        {
+            var dt = new DateTime(1985, 1, 11, 6, 24, 48);
+            var query = BogusCosmosDbAccount.Documents.Query<TestObject>()
+                            .Where(x => x.Name == "test"
+                            && (x.PossibleDateTime == dt
+                            || x.IsBool == false));
+            var queryString = query.ToString();
+            var dtString = dt.ToString("O");
+            Assert.Contains("OR", queryString);
+            Assert.Contains("false", queryString);
+            Assert.Contains(dtString, queryString);
+        }
+
+        [Fact]
+        public void WhereWithDateTimeOffset()
+        {
+            var dt = new DateTimeOffset(1985, 1, 11, 6, 24, 48, TimeSpan.Zero);
+            var query = BogusCosmosDbAccount.Documents.Query<TestObject>()
+                            .Where(x => x.Name == "test"
+                            && (x.PossibleDateTimeOffset == dt
+                            || x.IsBool == false));
+            var queryString = query.ToString();
+            var dtString = dt.ToString("O");
+            Assert.Contains("OR", queryString);
+            Assert.Contains("false", queryString);
+            Assert.Contains(dtString, queryString);
+        }
     }
 }

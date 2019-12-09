@@ -70,6 +70,15 @@
 //        }
 
 //        [Fact]
+//        public void GetItWithSingleQuote()
+//        {
+//            var db = BogusCosmosDbAccount.Documents;
+//            var query = db.Query<Item>().Where(x => x.Name == "test's");
+//            var list = query.ToList();
+//            Assert.True(list.Count == 0);
+//        }
+
+//        [Fact]
 //        public void GetDateTime()
 //        {
 //            var db = BogusCosmosDbAccount.Documents;
