@@ -109,7 +109,7 @@ namespace Stellar
                 case ExpressionType.Equal:
                     _sb.Append(" = ");
                     break;
-                case ExpressionType.NotEqual: 
+                case ExpressionType.NotEqual:
                     _sb.Append(" <> ");
                     break;
                 case ExpressionType.LessThan:
@@ -143,7 +143,7 @@ namespace Stellar
         {
             if (c.Value == null)
             {
-                _sb.Append("NULL");
+                _sb.Append("null");
             }
             else
             {
@@ -283,7 +283,7 @@ namespace Stellar
                         _sb.Append(",");
 
                     Visit(exp.Expression);
-                    if(exp.OrderType != OrderType.Ascending)
+                    if (exp.OrderType != OrderType.Ascending)
                     {
                         _sb.Append(" DESC");
                     }
@@ -325,7 +325,7 @@ namespace Stellar
             if (m.Expression != null && m.Expression.NodeType == ExpressionType.MemberInit)
             {
                 _sb.Append("t0.");
-                var name =  char.ToLowerInvariant(m.Member.Name[0]) + m.Member.Name.Substring(1);
+                var name = char.ToLowerInvariant(m.Member.Name[0]) + m.Member.Name.Substring(1);
                 _sb.Append(name); // TODO: fix this to the same serialize setting as we persists to cosmos
                 return m;
             }
@@ -357,7 +357,7 @@ namespace Stellar
                         var name = char.ToLowerInvariant(exp.Member.Name[0]) + exp.Member.Name.Substring(1);
                         _sb.Append(name); // TODO: fix this to the same serialize setting as we persists to cosmos
                     }
-                    
+
                     return m;
                 }
                 else if (exp.Expression.NodeType == ExpressionType.MemberAccess && m.Expression.Type.IsGenericType)

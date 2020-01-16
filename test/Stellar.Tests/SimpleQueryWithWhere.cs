@@ -61,7 +61,18 @@ namespace Stellar.Tests
 
             var queryString = query.ToString();
             Assert.NotNull(queryString);
-            Assert.Contains(".nullableGuid = '0000", queryString);
+            Assert.Contains(".nullableGuid = \"0000", queryString);
+        }
+
+        [Fact]
+        public void WhereWithNullNullable()
+        {
+            var query = BogusCosmosDbAccount.Documents.Query<TestObject>()
+                            .Where(x => x.NullableGuid == null);
+
+            var queryString = query.ToString();
+            Assert.NotNull(queryString);
+            Assert.Contains(".nullableGuid = null", queryString);
         }
 
         [Fact]
