@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1</TargetFrameworks>
   </PropertyGroup>
   <PropertyGroup>
     <Title>Stellar</Title>
@@ -9,7 +9,7 @@
     <Authors>Kyle Sonaty</Authors>
     <RepositoryUrl>https://github.com/kylesonaty/stellar</RepositoryUrl>
     <Copyright>Copyright 2017</Copyright>
-    <VersionPrefix>0.0.23</VersionPrefix>
+    <VersionPrefix>0.0.25</VersionPrefix>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
